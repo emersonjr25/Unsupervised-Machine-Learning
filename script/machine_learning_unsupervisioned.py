@@ -4,54 +4,37 @@ UNSUPERVISIONED MACHINE LEARNING
 """
 
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
 
-data_general = pd.read_csv('data/Assignment-1_Data.csv', sep=';')
+### reading and verifying data ###
 
-#country maybe after
-data_general = data_general.drop(['BillNo', 'Itemname', 'Date'], axis = 1)
+data_general = pd.read_csv('data/Mall_Customers.csv')
 
+data_general.info()
 data_general.isna().sum()
-
-data_general = data_general.dropna()
+data_general.shape
+data_general.columns
 
 encoder = LabelEncoder()
-data_general['Country'] = encoder.fit_transform(data_general['Country'])
-### exploring data ###
 
-list = []
+data_general['Gender'] = encoder.fit_transform(data_general['Gender'])
 
-for i in range(data_general.shape[1]):
-    list.append(len(data_general.iloc[:, i].unique()))
-    print(list)
-
-data_general.info()
-data_general.describe()
-
-data_general = data_general[data_general['Quantity'] <= 5000]
-
-array = np.array(data_general['Price'])
-list_transform = [i.replace(',', '.') for i in array]
-
-data_general['Price'] = np.array(list_transform).astype(float)
-
-data_general.info()
-### organizing data ###
+X = data_general.drop(['CustomerID', 'Gender', 'Age'], axis=1)
+X = X.values
 
 ### model 1 ###
-pca = PCA(n_components=2)
-components = pca.fit_transform(data_general)
-plt.scatter(components[:, 0], components[:, 1])
+model1 = KMeans(n_clusters=5, init='k-means++', random_state=1)
+y_kmeans = model1.fit_predict(X)
+plt.scatter(X[y_kmeans == 0, 0], X[y_kmeans == 0, 1], s = 100, c = 'red', label = 'Cluster 1')
+plt.scatter(X[y_kmeans == 1, 0], X[y_kmeans == 1, 1], s = 100, c = 'blue', label = 'Cluster 2')
+plt.scatter(X[y_kmeans == 2, 0], X[y_kmeans == 2, 1], s = 100, c = 'green', label = 'Cluster 3')
+plt.scatter(X[y_kmeans == 3, 0], X[y_kmeans == 3, 1], s = 100, c = 'cyan', label = 'Cluster 4')
+plt.scatter(X[y_kmeans == 4, 0], X[y_kmeans == 4, 1], s = 100, c = 'magenta', label = 'Cluster 5')
 
 ### model 2 ###
-k_means = KMeans(n_clusters=2)
-k = k_means.fit_transform(data_general)
-plt.scatter(k[:, 0], k[:, 1], c=data_general['Country'])
-### model 3 ###
-dbscan = DBSCAN()
-db = dbscan.fit_predict(data_general)
-plt.hist(db)
+pca = PCA()
+components = pca.fit_transform(X)
+plt.scatter(components[:, 0], components[:, 1], c=data_general['Age'])

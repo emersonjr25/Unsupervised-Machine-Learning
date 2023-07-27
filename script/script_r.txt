@@ -21,17 +21,28 @@ transformation <- function(gender){
 gender <- sapply(data$Gender, transformation)
 data$Gender <- as.numeric(gender)
 
+X_general <- data %>%
+  select(-c('CustomerID'))
+
 X <- data %>%
   select(-c('CustomerID', 'Gender', 'Age'))
 
+### viewing data ###
+plot(X_general$Spending.Score..1.100., X_general$Annual.Income..k.., pch=X_general$Gender)
+plot(X_general$Spending.Score..1.100., X_general$Age)
+plot(X_general$Annual.Income..k.., X_general$Age)
+
 ### model 1 ###
-PCA <- prcomp(X)
+PCA <- prcomp(X_general)
 plot(PCA$x[, 1], PCA$x[, 2])
 
 ### model 2 ###
-kmean <- kmeans(X, centers=5)
-plot(X$Annual.Income..k.., X$Spending.Score..1.100., col=kmean$cluster)
+kmean1 <- kmeans(X, centers=5)
+plot(X$Annual.Income..k.., X$Spending.Score..1.100., col=kmean1$cluster)
+
+kmeans2 <- kmeans(X_general, centers=5)
+plot(X_general$Spending.Score..1.100., X_general$Annual.Income..k.., col=kmeans2$cluster)
 
 ### model 3 ###
-dbsc <- dbscan(X, eps = 0.0001)
+dbsc <- dbscan(X, eps = 0.05, minPts = 2)
 plot(X$Annual.Income..k.., X$Spending.Score..1.100., col=dbsc$cluster)
